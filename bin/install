@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -e
+
+VERSION="$1"
+shift
+PRODUCTS=("$@")
+
+INSTALL_DIR="${MISE_INSTALL_DIR:-$HOME/.local/mise/installs/matlab/$VERSION}"
+
+echo "Installing MATLAB $VERSION to $INSTALL_DIR"
+echo "Products: ${PRODUCTS[*]}"
+
+# Compose mpm install command
+CMD=(mpm install matlab --release "$VERSION" --destination "$INSTALL_DIR")
+for p in "${PRODUCTS[@]}"; do
+    CMD+=("--products" "$p")
+done
+
+echo "Running: ${CMD[*]}"
+"${CMD[@]}"
