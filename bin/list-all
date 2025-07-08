@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# List supported versions
+
 echo "R2023a"
 echo "R2023b"
 echo "R2024a"
