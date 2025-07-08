@@ -1,8 +1,20 @@
 #!/usr/bin/env bash
 set -e
+set -x
 
-VERSION="$1"
-shift
+# Get version from $1 or environment variables
+if [[ -n "$1" ]]; then
+    VERSION="$1"
+    shift
+else
+    VERSION="${MISE_PLUGIN_VERSION:-${ASDF_INSTALL_VERSION}}"
+fi
+
+if [[ -z "$VERSION" ]]; then
+    echo "Error: Version not specified!"
+    exit 1
+fi
+
 PRODUCTS=("$@")
 
 INSTALL_DIR="${MISE_INSTALL_DIR:-$HOME/.local/mise/installs/matlab/$VERSION}"
@@ -10,8 +22,33 @@ INSTALL_DIR="${MISE_INSTALL_DIR:-$HOME/.local/mise/installs/matlab/$VERSION}"
 echo "Installing MATLAB $VERSION to $INSTALL_DIR"
 echo "Products: ${PRODUCTS[*]}"
 
-# Compose mpm install command
-CMD=(mpm install matlab --release "$VERSION" --destination "$INSTALL_DIR")
+# 1. Ensure mpm is installed
+if ! command -v mpm &> /dev/null; then
+    echo "'mpm' not found. Installing mpm..."
+
+    TMPDIR="$(mktemp -d)"
+    cd "$TMPDIR"
+
+    # Download mpm installer for Linux (update for other OS as needed)
+    wget https://www.mathworks.com/mpm/glnxa64/mpm -O mpm
+    chmod +x mpm
+
+    # Move to ~/.local/bin (or another directory in PATH)
+    INSTALL_MPM_DIR="$HOME/.local/bin"
+    mkdir -p "$INSTALL_MPM_DIR"
+    mv mpm "$INSTALL_MPM_DIR/"
+
+    export PATH="$INSTALL_MPM_DIR:$PATH"
+    echo "mpm installed to $INSTALL_MPM_DIR"
+
+    cd -
+    rm -rf "$TMPDIR"
+else
+    echo "'mpm' is already installed: $(command -v mpm)"
+fi
+
+# 2. Compose mpm install command
+CMD=(mpm install --release "$VERSION" --destination "$INSTALL_DIR" --products=MATLAB)
 for p in "${PRODUCTS[@]}"; do
     CMD+=("--products" "$p")
 done
