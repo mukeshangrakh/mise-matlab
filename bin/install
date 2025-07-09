@@ -17,7 +17,7 @@ fi
 
 PRODUCTS=("$@")
 
-INSTALL_DIR="${MISE_INSTALL_DIR:-$HOME/.local/mise/installs/matlab/$VERSION}"
+INSTALL_DIR="${MISE_INSTALL_DIR:-$HOME/.local/share/mise/installs/matlab/$VERSION}"
 
 echo "Installing MATLAB $VERSION to $INSTALL_DIR"
 echo "Products: ${PRODUCTS[*]}"
